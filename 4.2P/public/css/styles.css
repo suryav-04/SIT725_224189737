@@ -1,0 +1,20 @@
+body {
+  background-color: #f5f5f5;
+}
+
+nav {
+  background-color: #ff6f61;
+}
+
+.card {
+  border-radius: 10px;
+}
+
+.card-image img {
+  height: 200px;
+  object-fit: cover;
+}
+
+h3 {
+  font-weight: bold;
+}
