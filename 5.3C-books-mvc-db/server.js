@@ -8,7 +8,7 @@ const booksRoutes = require("./routes/books.routes");
 app.use(express.json());
 app.use(express.static("public"));
 
-// ⭐ MongoDB Connection (ADD THIS)
+// ⭐ MongoDB Connection 
 mongoose.connect("mongodb://127.0.0.1:27017/booksDB");
 
 mongoose.connection.on("connected", () => {
