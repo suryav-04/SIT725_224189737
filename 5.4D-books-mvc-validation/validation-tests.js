@@ -2,50 +2,52 @@ const axios = require("axios");
 
 const BASE_URL = "http://localhost:3000/api";
 
-let pass = 0;
 let total = 0;
+let passed = 0;
 
-// ⭐ dynamic ID
-const testId = "test_" + Date.now();
+function log(result, name) {
+  console.log(`TEST|${name}|${result}`);
+}
 
 async function test(name, fn) {
   total++;
   try {
     await fn();
-    console.log(`PASS: ${name}`);
-    pass++;
+    log("PASS", name);
+    passed++;
   } catch (err) {
-    console.log(`FAIL: ${name}`);
+    log("FAIL", name);
   }
 }
 
-async function runTests() {
+const id = "test_" + Date.now();
 
-  // 1. VALID CREATE
-  await test("Create valid book", async () => {
+async function run() {
+
+  // CREATE SUCCESS
+  await test("CREATE_VALID", async () => {
     const res = await axios.post(`${BASE_URL}/books`, {
-      id: testId,   // ✅ dynamic
+      id,
       title: "Test Book",
       author: "Tester",
       year: 2020,
       genre: "Fantasy",
-      summary: "This is a valid test summary.",
+      summary: "This is a valid summary text.",
       price: "10.00"
     });
-
     if (res.status !== 201) throw new Error();
   });
 
-  // 2. DUPLICATE ID
-  await test("Duplicate ID", async () => {
+  // DUPLICATE
+  await test("CREATE_FAIL_DUPLICATE", async () => {
     try {
       await axios.post(`${BASE_URL}/books`, {
-        id: testId,  // same ID again
-        title: "Test Book",
+        id,
+        title: "Test",
         author: "Tester",
         year: 2020,
         genre: "Fantasy",
-        summary: "Duplicate test summary.",
+        summary: "Duplicate summary.",
         price: "10.00"
       });
       throw new Error();
@@ -54,13 +56,11 @@ async function runTests() {
     }
   });
 
-  // 3. INVALID DATA
-  await test("Invalid data", async () => {
+  // REQUIRED
+  await test("REQUIRED", async () => {
     try {
       await axios.post(`${BASE_URL}/books`, {
-        id: "bad_" + Date.now(),
-        title: "",
-        price: 5
+        id: "bad_" + Date.now()
       });
       throw new Error();
     } catch (err) {
@@ -68,17 +68,101 @@ async function runTests() {
     }
   });
 
-  // 4. UPDATE VALID
-  await test("Update valid book", async () => {
-    const res = await axios.put(`${BASE_URL}/books/${testId}`, {
+  // TYPE
+  await test("TYPE", async () => {
+    try {
+      await axios.post(`${BASE_URL}/books`, {
+        id: "bad_" + Date.now(),
+        title: "Test",
+        author: "Tester",
+        year: "wrong",
+        genre: "Fantasy",
+        summary: "Valid summary text here",
+        price: "10.00"
+      });
+      throw new Error();
+    } catch (err) {
+      if (err.response.status !== 400) throw new Error();
+    }
+  });
+
+  // BOUNDARY (future year)
+  await test("TEMPORAL", async () => {
+    try {
+      await axios.post(`${BASE_URL}/books`, {
+        id: "bad_" + Date.now(),
+        title: "Test",
+        author: "Tester",
+        year: 3000,
+        genre: "Fantasy",
+        summary: "Valid summary text here",
+        price: "10.00"
+      });
+      throw new Error();
+    } catch (err) {
+      if (err.response.status !== 400) throw new Error();
+    }
+  });
+
+  // LENGTH
+  await test("LENGTH", async () => {
+    try {
+      await axios.post(`${BASE_URL}/books`, {
+        id: "bad_" + Date.now(),
+        title: "A",
+        author: "Tester",
+        year: 2020,
+        genre: "Fantasy",
+        summary: "short",
+        price: "10.00"
+      });
+      throw new Error();
+    } catch (err) {
+      if (err.response.status !== 400) throw new Error();
+    }
+  });
+
+  // UNKNOWN FIELD
+  await test("UNKNOWN_CREATE", async () => {
+    try {
+      await axios.post(`${BASE_URL}/books`, {
+        id: "bad_" + Date.now(),
+        title: "Test",
+        author: "Tester",
+        year: 2020,
+        genre: "Fantasy",
+        summary: "Valid summary text here",
+        price: "10.00",
+        hack: "bad"
+      });
+      throw new Error();
+    } catch (err) {
+      if (err.response.status !== 400) throw new Error();
+    }
+  });
+
+  // UPDATE SUCCESS
+  await test("UPDATE_VALID", async () => {
+    const res = await axios.put(`${BASE_URL}/books/${id}`, {
       title: "Updated Title"
     });
-
     if (res.status !== 200) throw new Error();
   });
 
-  // 5. UPDATE NOT FOUND
-  await test("Update non-existing book", async () => {
+  // IMMUTABLE
+  await test("IMMUTABLE", async () => {
+    try {
+      await axios.put(`${BASE_URL}/books/${id}`, {
+        id: "newId"
+      });
+      throw new Error();
+    } catch (err) {
+      if (err.response.status !== 400) throw new Error();
+    }
+  });
+
+  // UPDATE NOT FOUND
+  await test("UPDATE_FAIL", async () => {
     try {
       await axios.put(`${BASE_URL}/books/unknown`, {
         title: "Test"
@@ -89,14 +173,13 @@ async function runTests() {
     }
   });
 
-  console.log("\nSUMMARY:");
-  console.log(`${pass}/${total} tests passed`);
+  console.log(`SUMMARY|${passed}/${total}`);
 
-  if (pass === total) {
+  if (passed === total) {
     process.exit(0);
   } else {
     process.exit(1);
   }
 }
 
-runTests();
+run();
