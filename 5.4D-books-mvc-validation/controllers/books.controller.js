@@ -1,16 +1,26 @@
 const bookService = require("../services/books.service");
 
-// GET ALL
+//  Allowed fields (for safe writes)
+const allowedFields = ["id", "title", "author", "year", "genre", "summary", "price"];
+
+//  Check for unknown fields
+function hasUnknownFields(body) {
+  return Object.keys(body).some(key => !allowedFields.includes(key));
+}
+
+
+// 🔹 GET ALL BOOKS
 const getAllBooks = async (req, res) => {
   try {
     const books = await bookService.getAllBooks();
-    res.json(books);
+    res.status(200).json(books);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// GET BY ID
+
+// 🔹 GET BOOK BY ID
 const getBookById = async (req, res) => {
   try {
     const book = await bookService.getBookById(req.params.id);
@@ -19,58 +29,64 @@ const getBookById = async (req, res) => {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    res.json(book);
+    res.status(200).json(book);
+
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ message: err.message });
   }
 };
 
-// CREATE BOOK
+
+// 🔹 CREATE BOOK (POST)
 const createBook = async (req, res) => {
   try {
-    const book = await bookService.createBook(req.body);
-    res.status(201).json(book);
-  } catch (err) {
+    // 🚫 Reject unknown fields
+    if (hasUnknownFields(req.body)) {
+      return res.status(400).json({ message: "Unknown fields not allowed" });
+    }
 
+    const book = await bookService.createBook(req.body);
+
+    res.status(201).json(book);
+
+  } catch (err) {
+    
     if (err.code === 11000) {
       return res.status(409).json({ message: "Duplicate ID" });
     }
 
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ message: err.message });
-    }
-
-    res.status(500).json({ error: err.message });
+    // 🚫 Validation error
+    res.status(400).json({ message: err.message });
   }
 };
 
-// UPDATE BOOK
+
+// 🔹 UPDATE BOOK (PUT)
 const updateBook = async (req, res) => {
   try {
-    const id = req.params.id;
-
-    // prevent ID change
-    if (req.body.id && req.body.id !== id) {
-      return res.status(400).json({ message: "ID cannot be changed" });
+ 
+    if (hasUnknownFields(req.body)) {
+      return res.status(400).json({ message: "Unknown fields not allowed" });
     }
 
-    const updated = await bookService.updateBook(id, req.body);
+   
+    if (req.body.id) {
+      return res.status(400).json({ message: "ID cannot be modified" });
+    }
 
-    if (!updated) {
+    const updatedBook = await bookService.updateBook(req.params.id, req.body);
+
+    if (!updatedBook) {
       return res.status(404).json({ message: "Book not found" });
     }
 
-    res.status(200).json(updated);
+    res.status(200).json(updatedBook);
 
   } catch (err) {
-
-    if (err.name === "ValidationError") {
-      return res.status(400).json({ message: err.message });
-    }
-
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
+
 
 module.exports = {
   getAllBooks,

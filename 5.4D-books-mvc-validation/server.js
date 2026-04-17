@@ -20,3 +20,7 @@ const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
 });
+
+app.get("/api/integrity-check42", (req, res) => {
+  res.status(204).send();
+});
