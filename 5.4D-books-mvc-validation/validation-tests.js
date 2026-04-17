@@ -5,6 +5,9 @@ const BASE_URL = "http://localhost:3000/api";
 let pass = 0;
 let total = 0;
 
+// ⭐ dynamic ID
+const testId = "test_" + Date.now();
+
 async function test(name, fn) {
   total++;
   try {
@@ -16,13 +19,12 @@ async function test(name, fn) {
   }
 }
 
-// TESTS
 async function runTests() {
 
   // 1. VALID CREATE
   await test("Create valid book", async () => {
     const res = await axios.post(`${BASE_URL}/books`, {
-      id: "test1",
+      id: testId,   // ✅ dynamic
       title: "Test Book",
       author: "Tester",
       year: 2020,
@@ -38,7 +40,7 @@ async function runTests() {
   await test("Duplicate ID", async () => {
     try {
       await axios.post(`${BASE_URL}/books`, {
-        id: "test1",
+        id: testId,  // same ID again
         title: "Test Book",
         author: "Tester",
         year: 2020,
@@ -56,7 +58,7 @@ async function runTests() {
   await test("Invalid data", async () => {
     try {
       await axios.post(`${BASE_URL}/books`, {
-        id: "test2",
+        id: "bad_" + Date.now(),
         title: "",
         price: 5
       });
@@ -68,7 +70,7 @@ async function runTests() {
 
   // 4. UPDATE VALID
   await test("Update valid book", async () => {
-    const res = await axios.put(`${BASE_URL}/books/test1`, {
+    const res = await axios.put(`${BASE_URL}/books/${testId}`, {
       title: "Updated Title"
     });
 
@@ -87,7 +89,6 @@ async function runTests() {
     }
   });
 
-  // SUMMARY
   console.log("\nSUMMARY:");
   console.log(`${pass}/${total} tests passed`);
 
