@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Books Catalogue</title>
+
+  <style>
+    body {
+      font-family: Arial;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 24px;
+    }
+
+    button {
+      padding: 10px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .book {
+      padding: 10px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+      cursor: pointer;
+    }
+
+    .details {
+      margin-top: 20px;
+      border: 1px solid black;
+      padding: 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Books Catalogue developed by s224189737</h2>
+
+  <button onclick="getBooks()">Get all books</button>
+
+  <div id="list"></div>
+
+  <div id="details" class="details"></div>
+
+  <script>
+    function getBooks() {
+      fetch("/api/books")
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("list");
+          list.innerHTML = "";
+
+          data.forEach(book => {
+            const div = document.createElement("div");
+            div.className = "book";
+
+            // ⭐ FIX Decimal128 display
+            const price = book.price.$numberDecimal;
+
+            div.innerHTML = `
+              ${book.title} ${price} AUD
+            `;
+
+            div.onclick = () => getBookDetails(book.id);
+
+            list.appendChild(div);
+          });
+        });
+    }
+
+    function getBookDetails(id) {
+      fetch(`/api/books/${id}`)
+        .then(res => res.json())
+        .then(book => {
+
+          const price = book.price.$numberDecimal;
+
+          document.getElementById("details").innerHTML = `
+            <p><b>Title:</b> ${book.title}</p>
+            <p><b>Author:</b> ${book.author}</p>
+            <p><b>Year:</b> ${book.year}</p>
+            <p><b>Genre:</b> ${book.genre}</p>
+            <p><b>Summary:</b> ${book.summary}</p>
+            <p><b>Price (AUD):</b> ${price}</p>
+          `;
+        });
+    }
+  </script>
+
+</body>
+</html>
