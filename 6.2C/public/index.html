@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Grade Calculator</title>
+</head>
+<body>
+
+  <h2>Grade Calculator</h2>
+
+  <input type="text" id="marks" placeholder="Enter marks (e.g. 80,90,100)">
+  <button onclick="getGrade()">Calculate</button>
+
+  <p id="result"></p>
+
+  <script>
+    function getGrade() {
+      const marks = document.getElementById("marks").value;
+
+      fetch(`/grade?marks=${marks}`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById("result").innerText =
+            `Average: ${data.average}, Grade: ${data.grade}`;
+        })
+        .catch(() => {
+          document.getElementById("result").innerText = "Error!";
+        });
+    }
+  </script>
+
+</body>
+</html>
