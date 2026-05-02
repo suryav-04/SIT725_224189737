@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Real-Time Chat App</title>
+    <style>
+        body {
+            font-family: Arial;
+            text-align: center;
+        }
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+        button {
+            padding: 8px;
+        }
+        ul {
+            list-style: none;
+            padding: 0;
+            max-width: 500px;
+            margin: auto;
+        }
+        li {
+            padding: 8px;
+            margin: 5px;
+            background: #f2f2f2;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>💬 Real-Time Chat</h2>
+
+<input id="nameInput" placeholder="Enter your name">
+<br>
+<input id="msgInput" placeholder="Enter message">
+<button onclick="sendMessage()">Send</button>
+
+<ul id="messages"></ul>
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
