@@ -2,7 +2,7 @@ const socket = io();
 
 let username = "";
 
-// 🔥 NEW: join when name is entered
+// Name
 document.getElementById('nameInput').addEventListener('change', () => {
     username = document.getElementById('nameInput').value;
 
