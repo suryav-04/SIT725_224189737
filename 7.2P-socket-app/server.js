@@ -8,7 +8,7 @@ app.use(express.static('public'));
 io.on('connection', (socket) => {
     console.log('User connected:', socket.id);
 
-    // 🔥 NEW: handle user joining immediately
+    // 
     socket.on('join', (name) => {
         socket.username = name;
 
